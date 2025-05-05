@@ -20,9 +20,14 @@
   display: block;
 }
 
-.LawRefContainer {
-  background-color: #929292; /* Grauer Hintergrund */
-  color: #000000; /* Schwarze Schrift */
+.lawRef-suggestion {
   padding: 10px; /* Etwas Innenabstand */
   border-radius: 5px; /* Abgerundete Ecken */
+  border-color: var(--color-base-05);
+}
+
+.lawRef-header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
