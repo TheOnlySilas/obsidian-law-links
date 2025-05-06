@@ -1,4 +1,4 @@
-import { App, Modal, Notice, Plugin, PluginSettingTab, Setting, Vault, Workspace, WorkspaceLeaf, MarkdownPostProcessorContext, parseFrontMatterEntry, View, MarkdownView } from 'obsidian';
+import { App, Modal, Notice, Plugin, PluginSettingTab, Setting, Vault, Workspace, WorkspaceLeaf, MarkdownPostProcessorContext, parseFrontMatterEntry, View, MarkdownView, MetadataCache } from 'obsidian';
 import { LawRefView, VIEW_TYPE_LAWREF } from './law-sidebar';
 //import { OldpApi } from './api/opld';
 //import LawSuggester from './lawSuggester';
@@ -25,17 +25,7 @@ export default class LawRefPlugin extends Plugin {
 		this.addSettingTab(new LawRefPluginSettingTab(this.app, this));
 		
 		this.app.workspace.onLayoutReady(() => {this.activateView()});
-		this.app.workspace.on('file-open', (file) => {
-			const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_LAWREF);
-			if (leaves.length > 0) {
-				const view = leaves[0].view as LawRefView;
-				const LawRefList = this.getFrontMatterMeta();
-				if (LawRefList) {
-					view.parseLawRefList(LawRefList);
-				}
-			}
-
-		});
+		
 		/** If the plugin hooks up any global DOM events (on parts of the app that doesn't belong to this plugin)
 		 Using this function will automatically remove the event listener when this plugin is disabled.
 		this.registerDomEvent(document, 'click', (evt: MouseEvent) => {
@@ -55,7 +45,15 @@ export default class LawRefPlugin extends Plugin {
 		if (this.settings.useSuggester===true){
 			//this.registerEditorSuggest(new LawSuggester(this))
 		}
-
+		
+		this.app.metadataCache.on("changed", (meta) => {
+				//console.log("changed metadata");
+				this.updateLawRef();
+			});
+			this.app.workspace.on('file-open', (file) => {
+				this.updateLawRef();
+	
+			});
 	}
 
 	onunload() {
@@ -94,12 +92,22 @@ export default class LawRefPlugin extends Plugin {
 			if (!actFilemetadata) return console.log("no metadata");
 			let actFileFrontmatter = actFilemetadata.frontmatter;
 			let LawRefList = parseFrontMatterEntry(actFileFrontmatter, '§');
-			console.log(typeof LawRefList);
+			//console.log(typeof LawRefList);
 			if (LawRefList) {
-				console.log(LawRefList);
+				//console.log(LawRefList);
 				return LawRefList;
 			} else {
 				return [];
+		}
+	}
+	updateLawRef(){
+		const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_LAWREF);
+			if (leaves.length > 0) {
+				const view = leaves[0].view as LawRefView;
+				const LawRefList = this.getFrontMatterMeta();
+				if (LawRefList) {
+					view.parseLawRefList(LawRefList);
+				}
 			}
 	}
 

@@ -28,10 +28,24 @@ export class LawRefView extends ItemView {
           const lawRefHeaderContainer = lawRefElement.createDiv({ cls: "lawRef-header-container" });
           lawRefHeaderContainer.createEl("h2", { text: lawRef });
           const klappe = lawRefHeaderContainer.createEl("button", { cls: "lawRef-klappe" });
-          setIcon(klappe, "chevron-down");
+          setIcon(klappe, "chevron-up");
           
+
+          const lawRefBody = lawRefElement.createDiv({cls: "lawRef-body"});
+          lawRefElement.addClass("lawRef-open");
           this.OldPWrapper.search(lawRefBook, lawRefParagraph).then((res) => {
-            lawRefElement.createDiv({ text: sanitizeHTMLToDom(res) });
+            lawRefBody.setText(sanitizeHTMLToDom(res));
+          });
+          klappe.addEventListener("click", () => {
+            if (lawRefElement.hasClass("lawRef-open")) {
+              lawRefElement.removeClass("lawRef-open");
+              setIcon(klappe, "chevron-down");
+              lawRefBody.style.display = "none";
+            } else {
+              lawRefElement.addClass("lawRef-open");
+              setIcon(klappe, "chevron-up");
+              lawRefBody.style.display = "block";
+            }
           });
           
       });

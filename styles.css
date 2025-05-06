@@ -22,8 +22,16 @@
 
 .lawRef-suggestion {
   padding: 10px; /* Etwas Innenabstand */
-  border-radius: 5px; /* Abgerundete Ecken */
-  border-color: var(--color-base-05);
+  padding-top: 0px;
+  margin: 5px;
+  border-radius: 10px; /* Abgerundete Ecken */
+  border-color: var(--color-base-40);
+  border-width: 1px;
+  border-style: solid;
+}
+
+.lawRef-suggestion:not(.lawRef-open){
+  padding-bottom: 0px;
 }
 
 .lawRef-header-container {
