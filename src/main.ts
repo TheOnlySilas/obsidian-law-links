@@ -2,7 +2,7 @@ import { App, Modal, Notice, Plugin, PluginSettingTab, Setting, Vault, Workspace
 import { LawRefView, VIEW_TYPE_LAWREF } from './law-sidebar';
 //import { OldpApi } from './api/opld';
 //import LawSuggester from './lawSuggester';
-import {  lawRefPluginEditorProcessor, } from './law-editor-processor';
+import { lawRefDecorator } from './law-suggester';
 
 // Remember to rename these classes and interfaces!
 
@@ -20,7 +20,8 @@ export default class LawRefPlugin extends Plugin {
 	async onload() {
 		await this.loadSettings();
 		this.registerView(VIEW_TYPE_LAWREF, (leaf) => new LawRefView(leaf))
-		this.registerEditorExtension(lawRefPluginEditorProcessor);
+		this.registerEditorExtension(lawRefDecorator);
+
 		// This adds a settings tab so the user can configure various aspects of the plugin
 		this.addSettingTab(new LawRefPluginSettingTab(this.app, this));
 		

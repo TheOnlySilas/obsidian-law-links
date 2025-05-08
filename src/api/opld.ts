@@ -1,5 +1,5 @@
 import { request, requestUrl } from "obsidian"
-import data from "./table.json";
+//import data from "redundant/table.json";
 
 interface LawBook {
     id: number,
@@ -11,7 +11,7 @@ interface LawBook {
     order: number
 }
 
-const AllLawsTable: LawBook[] = data as LawBook[];
+//const AllLawsTable: LawBook[] = data as LawBook[];
 
 //const ApiKey = "api key"
 const base_url = "https://www.gesetze-im-internet.de"
@@ -33,7 +33,7 @@ export class ApiWrapper {
             const responseHtml = parser.parseFromString(rawResponse, "text/html");
             const textArea = responseHtml.getElementsByClassName("jnhtml");
             const lawText = textArea[0].innerHTML.toString().slice(5, -6)
-            console.log(lawText);
+            //console.log(lawText);
             if (!lawText) return "Konnte nicht gefunden werden.";
             return lawText;
 
@@ -43,7 +43,7 @@ export class ApiWrapper {
         }
     };
 
-    getIdbyName(slug: string) {
+    /**getIdbyName(slug: string) {
         const lawBook = AllLawsTable.find((law) => law.code === slug);
         if (lawBook) {
             return lawBook.id;
@@ -51,5 +51,5 @@ export class ApiWrapper {
             console.error(`Law book with slug ${slug} not found.`);
             return null;
         }
-    }
+    }*/
 }
