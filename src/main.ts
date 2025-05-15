@@ -2,7 +2,7 @@ import { App, Modal, Notice, Plugin, PluginSettingTab, Setting, Vault, Workspace
 import { LawRefView, VIEW_TYPE_LAWREF } from './law-sidebar';
 //import { OldpApi } from './api/opld';
 //import LawSuggester from './lawSuggester';
-import { lawRefDecorator } from './law-suggester';
+import { lawRefDecorator} from './law-editor';
 
 // Remember to rename these classes and interfaces!
 
@@ -14,18 +14,22 @@ const DEFAULT_SETTINGS: LawRefPluginSettings = {
 	useSuggester: false
 }
 
+
+
+
 export default class LawRefPlugin extends Plugin {
 	settings: LawRefPluginSettings;
+	
 	//private readonly OldpApi = new OldpApi();
 	async onload() {
 		await this.loadSettings();
 		this.registerView(VIEW_TYPE_LAWREF, (leaf) => new LawRefView(leaf))
-		this.registerEditorExtension(lawRefDecorator);
+		this.registerEditorExtension([lawRefDecorator]);
 
 		// This adds a settings tab so the user can configure various aspects of the plugin
 		this.addSettingTab(new LawRefPluginSettingTab(this.app, this));
-		
-		this.app.workspace.onLayoutReady(() => {this.activateView()});
+		this.app.workspace.onLayoutReady(() => { this.activateView() });
+
 		
 		/** If the plugin hooks up any global DOM events (on parts of the app that doesn't belong to this plugin)
 		 Using this function will automatically remove the event listener when this plugin is disabled.
@@ -33,9 +37,11 @@ export default class LawRefPlugin extends Plugin {
 			console.log('click', evt);
 		}); */
 
+
 		const ribbonIconEl = this.addRibbonIcon('dice', 'Sample Plugin', (evt: MouseEvent) => {
 			// Called when the user clicks the icon.
-			
+			let view = this.app.workspace.getLeavesOfType(VIEW_TYPE_LAWREF)[0].view as LawRefView
+			console.log("Laws: ", view.laws, "Temp Laws: ", view.tempLaws);
 			//this.activateView();
 		});
 
@@ -43,18 +49,19 @@ export default class LawRefPlugin extends Plugin {
 		//this.registerInterval(window.setInterval(() => console.log('setInterval'), 5 * 60 * 1000));
 
 		// register suggestor on § key
-		if (this.settings.useSuggester===true){
+		if (this.settings.useSuggester === true) {
 			//this.registerEditorSuggest(new LawSuggester(this))
 		}
-		
+
 		this.app.metadataCache.on("changed", (meta) => {
-				//console.log("changed metadata");
-				this.updateLawRef();
-			});
-			this.app.workspace.on('file-open', (file) => {
-				this.updateLawRef();
-	
-			});
+			//console.log("changed metadata");
+			this.updateLawRef();
+		});
+		this.app.workspace.on('file-open', (file) => {
+			this.updateLawRef();
+
+		});
+		console.log(this);
 	}
 
 	onunload() {
@@ -63,20 +70,20 @@ export default class LawRefPlugin extends Plugin {
 	async activateView() {
 		const { workspace } = this.app;
 		new Notice('Opening view');
-	
+
 		let leaf: WorkspaceLeaf | null = null;
 		const leaves = workspace.getLeavesOfType(VIEW_TYPE_LAWREF);
 
 		//const paragraphs = this.getFrontMatterMeta();
-		
+
 		if (leaves.length > 0) {
-		  // A leaf with our view already exists, use that
-		  leaf = leaves[0];
+			// A leaf with our view already exists, use that
+			leaf = leaves[0];
 		} else {
-		  // Our view could not be found in the workspace, create a new leaf
-		  // in the right sidebar for it
-		  leaf = workspace.getRightLeaf(false);
-		  await leaf.setViewState({ type: VIEW_TYPE_LAWREF, active: true });
+			// Our view could not be found in the workspace, create a new leaf
+			// in the right sidebar for it
+			leaf = workspace.getRightLeaf(false);
+			await leaf.setViewState({ type: VIEW_TYPE_LAWREF, active: true });
 
 
 		}
@@ -85,31 +92,31 @@ export default class LawRefPlugin extends Plugin {
 		// "Reveal" the leaf in case it is in a collapsed sidebar
 		workspace.revealLeaf(leaf);
 	}
-	getFrontMatterMeta(){
+	getFrontMatterMeta() {
 		const { workspace } = this.app;
 		const actFile = workspace.getActiveFile();
-		  	if (!actFile) return
-			  const actFilemetadata = app.metadataCache.getFileCache(actFile);
-			if (!actFilemetadata) return console.log("no metadata");
-			let actFileFrontmatter = actFilemetadata.frontmatter;
-			let LawRefList = parseFrontMatterEntry(actFileFrontmatter, '§');
-			//console.log(typeof LawRefList);
-			if (LawRefList) {
-				//console.log(LawRefList);
-				return LawRefList;
-			} else {
-				return [];
+		if (!actFile) return
+		const actFilemetadata = this.app.metadataCache.getFileCache(actFile);
+		if (!actFilemetadata) return console.log("no metadata");
+		let actFileFrontmatter = actFilemetadata.frontmatter;
+		let LawRefList = parseFrontMatterEntry(actFileFrontmatter, '§');
+		console.log("test: ", LawRefList);
+		if (LawRefList) {
+			//console.log(LawRefList);
+			return LawRefList;
+		} else {
+			return [];
 		}
 	}
-	updateLawRef(){
+	updateLawRef() {
 		const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_LAWREF);
-			if (leaves.length > 0) {
-				const view = leaves[0].view as LawRefView;
-				const LawRefList = this.getFrontMatterMeta();
-				if (LawRefList) {
-					view.parseLawRefList(LawRefList);
-				}
+		if (leaves.length > 0) {
+			const view = leaves[0].view as LawRefView;
+			const LawRefList = this.getFrontMatterMeta();
+			if (LawRefList) {
+				view.parseLawRefList(LawRefList);
 			}
+		}
 	}
 
 
@@ -128,12 +135,12 @@ class SampleModal extends Modal {
 	}
 
 	onOpen() {
-		const {contentEl} = this;
+		const { contentEl } = this;
 		contentEl.setText('Woah!');
 	}
 
 	onClose() {
-		const {contentEl} = this;
+		const { contentEl } = this;
 		contentEl.empty();
 	}
 }
@@ -147,7 +154,7 @@ class LawRefPluginSettingTab extends PluginSettingTab {
 	}
 
 	display(): void {
-		const {containerEl} = this;
+		const { containerEl } = this;
 
 		containerEl.empty();
 
@@ -162,3 +169,4 @@ class LawRefPluginSettingTab extends PluginSettingTab {
 				}));
 	}
 }
+
