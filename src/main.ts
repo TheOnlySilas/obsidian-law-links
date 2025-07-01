@@ -173,22 +173,34 @@ class LawRefPluginSettingTab extends PluginSettingTab {
 					await this.plugin.saveSettings();
 				}));
 
-		new Setting(containerEl)
-			.setName("How many Temporary Laws you can save")
-			.setDesc("choose a number between 1 and 5000")
+		var anzahl = new Setting(containerEl)
+			.setName("Wie viele temporäre (gelb umrandete) Referenzen auf einmal anzeigbar sind")
+			.setDesc("wähle eine Zahl zwischen 1 und 5000")
 			.addText((text) => text
-				.setPlaceholder('1 to 5000')
+				
+				.setPlaceholder('1 bis 5000')
 				.setValue(this.plugin.settings.anzahlTempLaws.toString())
 				.onChange(async (value) => {
 					if (parseInt(value) <= 5000 && parseInt(value) > 0) {
 						this.plugin.settings.anzahlTempLaws = parseInt(value);
+						anzahl.setDesc("wähle eine Zahl zwischen 1 und 5000")
 						await this.plugin.saveSettings();
+						anzahl.controlEl.children[0].removeClass("wrong-input");
+						anzahl.descEl.removeClass("wrong-input-text");
+						
 					}else{
-						new Notice("Bad!");
+						anzahl.setDesc("Keine Zahl zwischen 1 und 5000");
+						anzahl.controlEl.children[0].addClass("wrong-input");
+						anzahl.descEl.addClass("wrong-input-text");
 					}
+					
 				})
+				
 			);
-
+			
+			
+			
+		
 	}
 
 

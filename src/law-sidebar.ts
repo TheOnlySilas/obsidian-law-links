@@ -52,6 +52,7 @@ export class LawRefView extends ItemView {
     const law = new Law(lawRef, this, true);
     law.create();
     this.tempLaws.push(law);
+    console.log(this.plugin.settings.anzahlTempLaws);
     if (this.tempLaws.length > this.plugin.settings.anzahlTempLaws) {
       for (let i = 0; i < this.tempLaws.length; i++) {
         const element = this.tempLaws[i];
@@ -112,7 +113,7 @@ class Law {
     setIcon(this.button1, "chevron-up");
     this.lawRefBody = this.lawRefElement.createDiv({ cls: "lawRef-body" });
     if (testBookCode(this.book)===null){ 
-      console.log(`${this.book} is not a German Law Book`);
+      //console.log(`${this.book} is not a German Law Book`);
       this.lawRefBody.setText("Das Gesetzbuch " + this.book + " konnte nicht gefunden werden");
     } else{
     OldPWrapper.search(this.book, this.paragraph).then((res) => {
@@ -197,30 +198,30 @@ export function createLawReference(query: string) {
   let regnummer = new RegExp(/Nr\./);
   let q = query.replace("§ ", "").split(" ");
   let paragraph = parseInt(q[0]);
-  console.log(q);
+  //console.log(q);
   let book = q[q.length - 1];
   let lr: LawReference = { paragraph, book };
 
   q = q.slice(1, -1);
-  console.log(q);
+  //console.log(q);
   while (q.length > 0) {
-    console.log("test on", q[0])
+    //console.log("test on", q[0])
     if (regabsatz.test(q[0])) {
-      console.log("absatz!");
+      //console.log("absatz!");
       lr.absatz = convertfromRomanToNumber(q[0]);
       q.splice(0, 1);
     } else if (regsatz.test(q[0])) {
-      console.log("satz!");
+      //console.log("satz!");
       lr.satz = parseInt(q[0]);
       q.splice(0, 1);
     } else if (reghsatz.test(q[0])) {
-      console.log("Halbsatz!");
+      //console.log("Halbsatz!");
       if (q.length > 1) {
         lr.halbsatz = parseInt(q[1]);
         q.splice(0, 2);
       }
     }else if (regnummer.test(q[0])) {
-      console.log("Nummer!");
+      //console.log("Nummer!");
       if (q.length > 1) {
         lr.nummer = parseInt(q[1]);
         q.splice(0, 2);

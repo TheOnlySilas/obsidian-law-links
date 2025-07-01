@@ -78,3 +78,12 @@
     --background-transparency: 0;
   }
 }
+
+input.wrong-input {
+  border-color: var(--color-red);
+  background-color: var(--color-red);
+}
+
+.wrong-input-text {
+  color: var(--color-red)
+}
