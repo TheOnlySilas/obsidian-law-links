@@ -1,36 +1,39 @@
-import { App, Modal, Notice, Plugin, PluginSettingTab, Setting, Vault, Workspace, WorkspaceLeaf, MarkdownPostProcessorContext, parseFrontMatterEntry, View, MarkdownView, MetadataCache } from 'obsidian';
+import { App, Modal, Notice, Plugin, PluginSettingTab, Setting, Vault, Workspace, WorkspaceLeaf, MarkdownPostProcessorContext, parseFrontMatterEntry, View, MarkdownView, MetadataCache, setIcon } from 'obsidian';
 import { LawRefView, VIEW_TYPE_LAWREF } from './law-sidebar';
 //import { OldpApi } from './api/opld';
 //import LawSuggester from './lawSuggester';
-import { lawRefDecorator} from './law-editor';
+import { lawRefDecorator } from './law-editor';
 
 // Remember to rename these classes and interfaces!
 
 interface LawRefPluginSettings {
 	useSuggester: boolean;
+	anzahlTempLaws: number;
 }
 
 const DEFAULT_SETTINGS: LawRefPluginSettings = {
-	useSuggester: false
+	useSuggester: false,
+	anzahlTempLaws: 1
 }
-
 
 
 
 export default class LawRefPlugin extends Plugin {
 	settings: LawRefPluginSettings;
 	
+
+	 
 	//private readonly OldpApi = new OldpApi();
 	async onload() {
 		await this.loadSettings();
-		this.registerView(VIEW_TYPE_LAWREF, (leaf) => new LawRefView(leaf))
+		this.registerView(VIEW_TYPE_LAWREF, (leaf) => new LawRefView(leaf, this))
 		this.registerEditorExtension([lawRefDecorator]);
 
 		// This adds a settings tab so the user can configure various aspects of the plugin
 		this.addSettingTab(new LawRefPluginSettingTab(this.app, this));
 		this.app.workspace.onLayoutReady(() => { this.activateView() });
 
-		
+
 		/** If the plugin hooks up any global DOM events (on parts of the app that doesn't belong to this plugin)
 		 Using this function will automatically remove the event listener when this plugin is disabled.
 		this.registerDomEvent(document, 'click', (evt: MouseEvent) => {
@@ -38,7 +41,7 @@ export default class LawRefPlugin extends Plugin {
 		}); */
 
 
-		const ribbonIconEl = this.addRibbonIcon('dice', 'Sample Plugin', (evt: MouseEvent) => {
+		const ribbonIconEl = this.addRibbonIcon('section', 'Sample Plugin', (evt: MouseEvent) => {
 			// Called when the user clicks the icon.
 			let view = this.app.workspace.getLeavesOfType(VIEW_TYPE_LAWREF)[0].view as LawRefView
 			console.log("Laws: ", view.laws, "Temp Laws: ", view.tempLaws);
@@ -61,7 +64,7 @@ export default class LawRefPlugin extends Plugin {
 			this.updateLawRef();
 
 		});
-		console.log(this);
+
 	}
 
 	onunload() {
@@ -73,20 +76,22 @@ export default class LawRefPlugin extends Plugin {
 
 		let leaf: WorkspaceLeaf | null = null;
 		const leaves = workspace.getLeavesOfType(VIEW_TYPE_LAWREF);
-
 		//const paragraphs = this.getFrontMatterMeta();
-
+		
 		if (leaves.length > 0) {
 			// A leaf with our view already exists, use that
 			leaf = leaves[0];
+			
 		} else {
 			// Our view could not be found in the workspace, create a new leaf
 			// in the right sidebar for it
 			leaf = workspace.getRightLeaf(false);
 			await leaf.setViewState({ type: VIEW_TYPE_LAWREF, active: true });
-
+			
 
 		}
+		//leaf.view.icon = "lucide-section";
+		
 
 
 		// "Reveal" the leaf in case it is in a collapsed sidebar
@@ -100,7 +105,7 @@ export default class LawRefPlugin extends Plugin {
 		if (!actFilemetadata) return console.log("no metadata");
 		let actFileFrontmatter = actFilemetadata.frontmatter;
 		let LawRefList = parseFrontMatterEntry(actFileFrontmatter, '§');
-		console.log("test: ", LawRefList);
+		//console.log("test: ", LawRefList);
 		if (LawRefList) {
 			//console.log(LawRefList);
 			return LawRefList;
@@ -167,6 +172,26 @@ class LawRefPluginSettingTab extends PluginSettingTab {
 					this.plugin.settings.useSuggester = value;
 					await this.plugin.saveSettings();
 				}));
+
+		new Setting(containerEl)
+			.setName("How many Temporary Laws you can save")
+			.setDesc("choose a number between 1 and 5000")
+			.addText((text) => text
+				.setPlaceholder('1 to 5000')
+				.setValue(this.plugin.settings.anzahlTempLaws.toString())
+				.onChange(async (value) => {
+					if (parseInt(value) <= 5000 && parseInt(value) > 0) {
+						this.plugin.settings.anzahlTempLaws = parseInt(value);
+						await this.plugin.saveSettings();
+					}else{
+						new Notice("Bad!");
+					}
+				})
+			);
+
 	}
+
+
 }
+
 

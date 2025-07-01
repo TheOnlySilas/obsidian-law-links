@@ -12,7 +12,7 @@ import {
 
 import { EditorState, StateField, StateEffect, Transaction, ChangeSet } from '@codemirror/state';
 
-import { LawRefView, VIEW_TYPE_LAWREF } from './law-sidebar';
+import { createLawReference, LawRefView, VIEW_TYPE_LAWREF } from './law-sidebar';
 import { MarkdownView } from 'obsidian';
 
 /**
@@ -21,7 +21,7 @@ const obsView = app.workspace.getActiveViewOfType(MarkdownView);
 const editorView = obsView?.editor.cm as EditorView;
  */
 const lawRefMatcher = new MatchDecorator({
-  regexp: /(?:(?<=^|\n)|(?<=\s))(§\s\d+\s\w+)(?=\s|$)/g,
+  regexp: /(§|Art\.)\s\d+\w?\s(((I?(M*D*C*L*X*V*I*))|\d|(Nr\.\s\d+))\s)*(\w+)/g,
   decoration: Decoration.mark({ tagName: "span", class: "lr-underline" }),
 })
 
@@ -37,7 +37,8 @@ export const lawRefDecorator = ViewPlugin.fromClass(class {
     let elements = document.querySelectorAll(".lr-underline");
     elements.forEach((element: HTMLElement) => {
       element.onclick = () => {
-        let query = element.innerText.replace("§ ", "");
+        console.log(createLawReference(element.innerText));
+        let query = createLawReference(element.innerText);
         let leaves = app.workspace.getLeavesOfType(VIEW_TYPE_LAWREF);
         let view = leaves[0].view as LawRefView;
         view.addTempLaw(query);
