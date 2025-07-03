@@ -9,9 +9,9 @@ const OldPWrapper = new ApiWrapper();
 
 export class LawRefView extends ItemView {
   laws: Law[] = [];
-
   tempLaws: Law[] = [];
   suggestionContainer: HTMLDivElement;
+  searchBar: HTMLInputElement;
   plugin: LawRefPlugin;
   constructor(leaf: WorkspaceLeaf, plugin: LawRefPlugin) {
     super(leaf);
@@ -67,10 +67,18 @@ export class LawRefView extends ItemView {
 
   async onOpen() {
     //console.log("Example view opened");
+    const view = this;
     const container = this.containerEl.children[1];
     container.empty();
     container.createEl("h1", { text: "Gesetzesauszüge" });
-
+    this.searchBar = container.createEl("input", {cls: "lawRef-search", type: "text", placeholder: "Suche ein Gesetz..." })
+    this.searchBar.addEventListener("keyup", function(event) {
+      if (event.key === "Enter"){
+        console.log(view.searchBar.value);
+        view.addTempLaw(createLawReference(this.value))
+        
+      }
+    })
     this.suggestionContainer = container.createDiv({ cls: "lawRef-suggestion-container" });
   }
 

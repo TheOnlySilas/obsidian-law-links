@@ -87,3 +87,12 @@ input.wrong-input {
 .wrong-input-text {
   color: var(--color-red)
 }
+
+input.lawRef-search {
+  width: 100%;
+  margin: 5px;
+  display: flex;
+  align-self: center;
+  justify-self: center;
+  
+}
