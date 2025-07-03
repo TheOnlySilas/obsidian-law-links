@@ -34,19 +34,12 @@ export default class LawRefPlugin extends Plugin {
 		this.app.workspace.onLayoutReady(() => { this.activateView() });
 
 
-		/** If the plugin hooks up any global DOM events (on parts of the app that doesn't belong to this plugin)
-		 Using this function will automatically remove the event listener when this plugin is disabled.
-		this.registerDomEvent(document, 'click', (evt: MouseEvent) => {
-			console.log('click', evt);
-		}); */
-
-
-		const ribbonIconEl = this.addRibbonIcon('section', 'Sample Plugin', (evt: MouseEvent) => {
+		/**const ribbonIconEl = this.addRibbonIcon('section', 'Sample Plugin', (evt: MouseEvent) => {
 			// Called when the user clicks the icon.
 			let view = this.app.workspace.getLeavesOfType(VIEW_TYPE_LAWREF)[0].view as LawRefView
 			console.log("Laws: ", view.laws, "Temp Laws: ", view.tempLaws);
 			//this.activateView();
-		});
+		});**/
 
 		// When registering intervals, this function will automatically clear the interval when the plugin is disabled.
 		//this.registerInterval(window.setInterval(() => console.log('setInterval'), 5 * 60 * 1000));
@@ -57,7 +50,6 @@ export default class LawRefPlugin extends Plugin {
 		}
 
 		this.app.metadataCache.on("changed", (meta) => {
-			//console.log("changed metadata");
 			this.updateLawRef();
 		});
 		this.app.workspace.on('file-open', (file) => {
@@ -105,9 +97,7 @@ export default class LawRefPlugin extends Plugin {
 		if (!actFilemetadata) return console.log("no metadata");
 		let actFileFrontmatter = actFilemetadata.frontmatter;
 		let LawRefList = parseFrontMatterEntry(actFileFrontmatter, '§');
-		//console.log("test: ", LawRefList);
 		if (LawRefList) {
-			//console.log(LawRefList);
 			return LawRefList;
 		} else {
 			return [];

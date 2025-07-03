@@ -5,7 +5,6 @@ import data from "./api/table.json";
 
 export function convertfromRomanToNumber(num:string){
     let res = 0;
-    //console.log("test", num);
 
     for (let i = 0; i < num.length; i++) {
         // Getting value of symbol s[i]

@@ -33,7 +33,6 @@ export class ApiWrapper {
             const responseHtml = parser.parseFromString(rawResponse, "text/html");
             const textArea = responseHtml.getElementsByClassName("jnhtml");
             const lawText = textArea[0].innerHTML.toString().slice(5, -6)
-            //console.log(lawText);
             if (!lawText) return "Konnte nicht gefunden werden.";
             return lawText;
 

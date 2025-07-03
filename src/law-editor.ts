@@ -37,7 +37,6 @@ export const lawRefDecorator = ViewPlugin.fromClass(class {
     let elements = document.querySelectorAll(".lr-underline");
     elements.forEach((element: HTMLElement) => {
       element.onclick = () => {
-        console.log(createLawReference(element.innerText));
         let query = createLawReference(element.innerText);
         let leaves = app.workspace.getLeavesOfType(VIEW_TYPE_LAWREF);
         let view = leaves[0].view as LawRefView;
@@ -53,33 +52,6 @@ export const lawRefDecorator = ViewPlugin.fromClass(class {
 
 
 
-/**export const lawRefField = StateField.define<string>({
-  create(state: EditorState) {
-    return "";
-  },
-  update(oldState: string, tr: Transaction): string {
-    let newState = oldState;
 
-    return newState;
-  }
-})
-
-export function dispatchTransaction() {
-  const mdView = app.workspace.getActiveViewOfType(MarkdownView);
-  // @ts-expect-error, not typed
-  const editorView = mdView.editor.cm as EditorView;
-  let doc = editorView.state.doc.toString(), pos = 0;
-
-
-  if (!doc.startsWith("---")) { return console.log("no frontmatter") };
-  let frontmatter = doc.slice(doc.indexOf("§"), doc.indexOf("---", 3));
-  let frontmatterlength = globalThis.getFrontMatterMeta().length;
-  console.log("frontmatter: ", frontmatterlength);
-
-
-  editorView.dispatch({
-    changes: { from: 0, insert: "" }
-  });
-}*/
 
 

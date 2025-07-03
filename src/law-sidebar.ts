@@ -43,30 +43,25 @@ export class LawRefView extends ItemView {
   };
 
   addLaw(lawRef: string, suggestionContainer: HTMLElement) {
-    //console.log("lawRef: ", lawRef);
     const law = new Law(lawRef, this);
     law.create();
     this.laws.push(law);
 
   }
   addTempLaw(lawRef: string | LawReference) {
-    //console.log("tempLaw: ", lawRef);
     const law = new Law(lawRef, this, true);
     law.create();
     this.tempLaws.push(law);
     this.tempLaws.forEach(element => {
       let i = this.tempLaws.length - this.tempLaws.indexOf(element);
-      console.log(element.paragraph, element.book, i);
       if (i > this.plugin.settings.anzahlTempLaws){
         element.remove();
         this.tempLaws.splice(this.tempLaws.indexOf(element),1);
       }
     });
-    console.log(this.tempLaws);
   }
 
   async onOpen() {
-    //console.log("Example view opened");
     const view = this;
     const container = this.containerEl.children[1];
     container.empty();
@@ -74,7 +69,6 @@ export class LawRefView extends ItemView {
     this.searchBar = container.createEl("input", {cls: "lawRef-search", type: "text", placeholder: "Suche ein Gesetz..." })
     this.searchBar.addEventListener("keyup", function(event) {
       if (event.key === "Enter"){
-        console.log(view.searchBar.value);
         view.addTempLaw(createLawReference(this.value))
         
       }
@@ -124,7 +118,6 @@ class Law {
     setIcon(this.button1, "chevron-up");
     this.lawRefBody = this.lawRefElement.createDiv({ cls: "lawRef-body" });
     if (testBookCode(this.book)===null){ 
-      //console.log(`${this.book} is not a German Law Book`);
       this.lawRefBody.setText("Das Gesetzbuch " + this.book + " konnte nicht gefunden werden");
     } else{
     OldPWrapper.search(this.book, this.paragraph).then((res) => {
@@ -147,7 +140,6 @@ class Law {
         }
       });
       this.button1.addEventListener("click", () => {
-        //console.log("button1 clicked");
         this.toLawFromTemp()
       });
     } else {
@@ -209,30 +201,23 @@ export function createLawReference(query: string) {
   let regnummer = new RegExp(/Nr\./);
   let q = query.replace("§ ", "").split(" ");
   let paragraph = parseInt(q[0]);
-  //console.log(q);
   let book = q[q.length - 1];
   let lr: LawReference = { paragraph, book };
 
   q = q.slice(1, -1);
-  //console.log(q);
   while (q.length > 0) {
-    //console.log("test on", q[0])
     if (regabsatz.test(q[0])) {
-      //console.log("absatz!");
       lr.absatz = convertfromRomanToNumber(q[0]);
       q.splice(0, 1);
     } else if (regsatz.test(q[0])) {
-      //console.log("satz!");
       lr.satz = parseInt(q[0]);
       q.splice(0, 1);
     } else if (reghsatz.test(q[0])) {
-      //console.log("Halbsatz!");
       if (q.length > 1) {
         lr.halbsatz = parseInt(q[1]);
         q.splice(0, 2);
       }
     }else if (regnummer.test(q[0])) {
-      //console.log("Nummer!");
       if (q.length > 1) {
         lr.nummer = parseInt(q[1]);
         q.splice(0, 2);
