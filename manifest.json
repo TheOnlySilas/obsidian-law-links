@@ -1,7 +1,7 @@
 {
 	"id": "obsidian-law-ref",
 	"name": "Law References",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"minAppVersion": "0.15.0",
 	"description": "This plugin suggests laws to the user (including descriptions) on typing a paragraph symbol. Currently we only support german laws using openlegaldata.io.",
 	"author": "Silas Schimmel & Maris Beer",
