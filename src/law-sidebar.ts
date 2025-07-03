@@ -9,7 +9,9 @@ const OldPWrapper = new ApiWrapper();
 
 export class LawRefView extends ItemView {
   laws: Law[] = [];
+
   tempLaws: Law[] = [];
+  suggestionContainer: HTMLDivElement;
   plugin: LawRefPlugin;
   constructor(leaf: WorkspaceLeaf, plugin: LawRefPlugin) {
     super(leaf);
@@ -52,15 +54,16 @@ export class LawRefView extends ItemView {
     const law = new Law(lawRef, this, true);
     law.create();
     this.tempLaws.push(law);
-    console.log(this.plugin.settings.anzahlTempLaws);
-    if (this.tempLaws.length > this.plugin.settings.anzahlTempLaws) {
-      for (let i = 0; i < this.tempLaws.length; i++) {
-        const element = this.tempLaws[i];
-        this.tempLaws.shift();
+    this.tempLaws.forEach(element => {
+      let i = this.tempLaws.length - this.tempLaws.indexOf(element);
+      console.log(element.paragraph, element.book, i);
+      if (i > this.plugin.settings.anzahlTempLaws){
+        element.remove();
+        this.tempLaws.splice(this.tempLaws.indexOf(element),1);
       }
-    }
+    });
+    console.log(this.tempLaws);
   }
-  convertTempLawToLaw() { }
 
   async onOpen() {
     //console.log("Example view opened");
@@ -68,7 +71,7 @@ export class LawRefView extends ItemView {
     container.empty();
     container.createEl("h1", { text: "Gesetzesauszüge" });
 
-    container.createDiv({ cls: "lawRef-suggestion-container" });
+    this.suggestionContainer = container.createDiv({ cls: "lawRef-suggestion-container" });
   }
 
   async onClose() {
@@ -99,13 +102,13 @@ class Law {
       this.paragraph = name.paragraph.toString();
     }
     this.temp = temp || false;
+    
     this.container = ctx.containerEl.children[1].getElementsByClassName("lawRef-suggestion-container")[0] as HTMLElement;
     this.view = ctx;
   }
 
   create() {
-    this.lawRefElement = this.container.createDiv({ cls: "lawRef-suggestion" });
-
+    this.lawRefElement= this.container.createDiv({cls: "lawRef-element"});
     this.lawRefHeaderContainer = this.lawRefElement.createDiv({ cls: "lawRef-header-container" });
     this.lawRefHeaderContainer.createEl("h2", { text: `${this.paragraph} ${this.book}` });
     this.lawRefMenu = this.lawRefHeaderContainer.createDiv({ cls: "lawRef-menu" })
@@ -152,9 +155,6 @@ class Law {
         }
       });
     }
-    if (this.temp) {
-
-    }
   }
   toLawFromTemp() {
     let i = this.view.tempLaws.findIndex((el) => el.book === this.book && el.paragraph === this.paragraph);
@@ -169,6 +169,9 @@ class Law {
     this.view.app.fileManager.processFrontMatter(activeFile, (frontmatter) => {
       parseFrontMatterEntry(frontmatter, '§').push(`${this.paragraph} ${this.book}`);
     })
+  }
+  remove(){
+    this.lawRefElement.remove();
   }
 }
 

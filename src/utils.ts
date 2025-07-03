@@ -1,5 +1,5 @@
 
-import data from "./redundant/table.json";
+import data from "./api/table.json";
 
 
 
