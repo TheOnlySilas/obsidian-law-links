@@ -96,3 +96,7 @@ input.lawRef-search {
   justify-self: center;
   
 }
+
+.jurAbsatz:not(:first-child) {
+  margin-top: 10px;
+}
