@@ -3,6 +3,7 @@ import { LawRefView, VIEW_TYPE_LAWREF } from './law-sidebar';
 //import { OldpApi } from './api/opld';
 //import LawSuggester from './lawSuggester';
 import { lawRefDecorator } from './law-editor';
+import { ApiWrapper } from './api/opld';
 
 // Remember to rename these classes and interfaces!
 
@@ -26,6 +27,7 @@ export default class LawRefPlugin extends Plugin {
 	//private readonly OldpApi = new OldpApi();
 	async onload() {
 		await this.loadSettings();
+		const api = new ApiWrapper;
 		this.registerView(VIEW_TYPE_LAWREF, (leaf) => new LawRefView(leaf, this))
 		this.registerEditorExtension([lawRefDecorator]);
 
@@ -33,6 +35,11 @@ export default class LawRefPlugin extends Plugin {
 		this.addSettingTab(new LawRefPluginSettingTab(this.app, this));
 		this.app.workspace.onLayoutReady(() => { this.activateView() });
 
+		const ribbonIconEl = this.addRibbonIcon('section', 'Sample Plugin', (evt: MouseEvent) => {
+			// Called when the user clicks the icon.
+			api.previousLaw("bgb", "14");
+			//this.activateView();
+		});
 
 		/**const ribbonIconEl = this.addRibbonIcon('section', 'Sample Plugin', (evt: MouseEvent) => {
 			// Called when the user clicks the icon.

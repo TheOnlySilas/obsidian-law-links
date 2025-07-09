@@ -1,11 +1,11 @@
-import { App, ItemView, WorkspaceLeaf, parseFrontMatterEntry, sanitizeHTMLToDom, setIcon } from "obsidian";
+import { App, ItemView, WorkspaceLeaf, parseFrontMatterEntry, parseFrontMatterStringArray, parseYaml, sanitizeHTMLToDom, setIcon } from "obsidian";
 import { ApiWrapper } from "./api/opld";
 import LawRefPlugin from "./main";
 import { convertfromRomanToNumber, testBookCode } from "./utils";
 
 export const VIEW_TYPE_LAWREF = "lawref-view";
 
-const OldPWrapper = new ApiWrapper();
+const oldPWrapper = new ApiWrapper();
 
 export class LawRefView extends ItemView {
   laws: Law[] = [];
@@ -85,15 +85,16 @@ class Law {
   view: LawRefView;
   book: string;
   paragraph: string;
+  activeParagraph: string;
   value: DocumentFragment | string;
   container: HTMLElement
   temp: boolean
   lawRefElement: HTMLElement;
-  lawRefHeaderContainer: HTMLElement;
   lawRefMenu: HTMLElement;
   button1: HTMLButtonElement;
   button2?: HTMLButtonElement;
   lawRefBody: HTMLElement;
+  header: HTMLElement;
 
   constructor(name: string | LawReference, ctx: LawRefView, temp?: boolean) {
     if (typeof name === "string") {
@@ -104,23 +105,82 @@ class Law {
       this.paragraph = name.paragraph.toString();
     }
     this.temp = temp || false;
-    
+    this.activeParagraph = this.paragraph;
     this.container = ctx.containerEl.children[1].getElementsByClassName("lawRef-suggestion-container")[0] as HTMLElement;
     this.view = ctx;
   }
 
-  create() {
+  async create() {
     this.lawRefElement= this.container.createDiv({cls: "lawRef-element"});
-    this.lawRefHeaderContainer = this.lawRefElement.createDiv({ cls: "lawRef-header-container" });
-    this.lawRefHeaderContainer.createEl("h2", { text: `${this.paragraph} ${this.book}` });
-    this.lawRefMenu = this.lawRefHeaderContainer.createDiv({ cls: "lawRef-menu" })
+    let lawRefHeaderContainer = this.lawRefElement.createDiv({ cls: "lawRef-header-container"});
+    let h2container = lawRefHeaderContainer.createDiv({attr: {style: "display: flex"}})
+    let prev = h2container.createEl("span", {cls: "blaet", attr: {style: "display: none"}});
+    h2container.createEl("h2", { text: `${this.activeParagraph} ${this.book}` })    
+    let next = h2container.createEl("span", {cls: "blaet", attr: {style: "display: none"}});
+    setIcon(prev, "chevron-left")
+    setIcon(next, "chevron-right")
+    lawRefHeaderContainer.addEventListener("mouseover", () => {
+      prev.style.display = "flex";
+      next.style.display = "flex";
+    });
+    lawRefHeaderContainer.addEventListener("mouseout", () => {
+      prev.style.display = "none";
+      next.style.display = "none";
+    })
+
+        this.lawRefMenu = lawRefHeaderContainer.createDiv({ cls: "lawRef-menu" })
+
+    let prevLink = await oldPWrapper.previousLaw(this.book, this.activeParagraph)
+    prev.addEventListener("click", () => {
+      console.log(prevLink);
+      if (prevLink){
+      this.activeParagraph = prevLink;
+      this.update()
+      }
+      let reset:HTMLElement|undefined;
+      console.log(this.activeParagraph, this.paragraph)
+      if (this.activeParagraph!==this.paragraph){
+        reset = this.lawRefMenu.createEl("button", {cls: "lawRef-menu-item"})
+        reset.addEventListener("click", ()=>{this.activeParagraph=this.paragraph; this.update()});
+        setIcon(reset, "list-restart")
+      }else{
+        if (reset){
+        reset.remove();
+        }
+      }
+    })
+    
+
+    let nextLink = await oldPWrapper.nextLaw(this.book, this.activeParagraph)
+    next.addEventListener("click", ()=> {
+      console.log(nextLink);
+      if (nextLink){
+      this.activeParagraph = nextLink;
+      this.update();
+      }
+      let reset:HTMLElement|undefined;
+      console.log(this.activeParagraph, this.paragraph)
+      if (this.activeParagraph!==this.paragraph){
+        reset = this.lawRefMenu.createEl("button", {cls: "lawRef-menu-item"})
+        reset.addEventListener("click", ()=>{this.activeParagraph=this.paragraph; this.update()});
+        setIcon(reset, "list-restart")
+      }else{
+        if (reset){
+        reset.remove();
+        }
+      }
+    })
+    
+
+
+
     this.button1 = this.lawRefMenu.createEl("button", { cls: ["lawRef-button1", "lawRef-menu-item"] });
     setIcon(this.button1, "chevron-up");
     this.lawRefBody = this.lawRefElement.createDiv({ cls: "lawRef-body" });
     if (testBookCode(this.book)===null){ 
       this.lawRefBody.setText("Das Gesetzbuch " + this.book + " konnte nicht gefunden werden");
     } else{
-    OldPWrapper.search(this.book, this.paragraph).then((res) => {
+    oldPWrapper.search(this.book, this.activeParagraph).then((res) => {
       this.value = sanitizeHTMLToDom(res);
       this.lawRefBody.setText(this.value);
     });
@@ -134,7 +194,7 @@ class Law {
 
       this.button2.addEventListener("click", () => {
         this.lawRefElement.remove();
-        let i = this.view.tempLaws.findIndex((el) => el.book === this.book && el.paragraph === this.paragraph);
+        let i = this.view.tempLaws.findIndex((el) => el.book === this.book && el.paragraph === this.activeParagraph);
         if (i !== -1) {
           this.view.tempLaws.splice(i, 1);
         }
@@ -156,8 +216,14 @@ class Law {
       });
     }
   }
+
+  update (){
+    this.lawRefElement.remove()
+    this.create()
+  }
+
   toLawFromTemp() {
-    let i = this.view.tempLaws.findIndex((el) => el.book === this.book && el.paragraph === this.paragraph);
+    let i = this.view.tempLaws.findIndex((el) => el.book === this.book && el.paragraph === this.activeParagraph);
     if (i !== -1) {
       this.view.tempLaws.splice(i, 1);
     }
@@ -167,8 +233,14 @@ class Law {
       return
     }
     this.view.app.fileManager.processFrontMatter(activeFile, (frontmatter) => {
-      parseFrontMatterEntry(frontmatter, '§').push(`${this.paragraph} ${this.book}`);
+      let fm = parseFrontMatterEntry(frontmatter, '§');
+      console.log(fm);
+      if (fm === null){
+        frontmatter['§'] = [];
+      }
+      parseFrontMatterEntry(frontmatter, '§').push(`${this.activeParagraph} ${this.book}`);
     })
+    
   }
   remove(){
     this.lawRefElement.remove();
